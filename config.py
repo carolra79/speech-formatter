@@ -9,7 +9,7 @@ TRANSCRIBE_BUCKET = os.getenv('TRANSCRIBE_BUCKET', 'speech-formatter-audio-18574
 TRANSCRIBE_JOB_PREFIX = 'speech-formatter'
 
 # AWS Bedrock settings  
-BEDROCK_MODEL_ID = 'anthropic.claude-3-sonnet-20240229-v1:0'
+BEDROCK_MODEL_ID = 'amazon.nova-lite-v1:0'
 
 # Template storage
 TEMPLATE_BUCKET = os.getenv('TEMPLATE_BUCKET', 'speech-formatter-templates-185749752590')
