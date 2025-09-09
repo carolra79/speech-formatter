@@ -5,7 +5,16 @@ from config import AWS_REGION, AWS_PROFILE, TRANSCRIBE_BUCKET, BEDROCK_MODEL_ID,
 
 class SpeechProcessor:
     def __init__(self):
-        session = boto3.Session(profile_name=AWS_PROFILE)
+        # Use profile if specified, otherwise use default credentials (IAM role on EC2)
+        if AWS_PROFILE and AWS_PROFILE != 'default':
+            try:
+                session = boto3.Session(profile_name=AWS_PROFILE)
+            except Exception:
+                # Fallback to default credentials if profile not found
+                session = boto3.Session()
+        else:
+            session = boto3.Session()
+            
         self.transcribe = session.client('transcribe', region_name=AWS_REGION)
         self.bedrock = session.client('bedrock-runtime', region_name=AWS_REGION)
         self.s3 = session.client('s3', region_name=AWS_REGION)

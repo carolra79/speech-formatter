@@ -2,7 +2,7 @@ import os
 
 # AWS Configuration
 AWS_REGION = os.getenv('AWS_REGION', 'us-east-1')
-AWS_PROFILE = os.getenv('AWS_PROFILE', 'speech-formatter-user')
+AWS_PROFILE = os.getenv('AWS_PROFILE', 'default')
 
 # AWS Transcribe settings
 TRANSCRIBE_BUCKET = os.getenv('TRANSCRIBE_BUCKET', 'speech-formatter-audio-185749752590')
