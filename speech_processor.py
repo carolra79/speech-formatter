@@ -88,14 +88,17 @@ class SpeechProcessor:
         prompt += "\n\nOnly include booking links when the input text specifically mentions booking a call, meeting, or appointment."
         
         body = json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 2000,
+            
+            
             "messages": [
                 {
                     "role": "user",
-                    "content": prompt
+                    "content": [{"text": prompt}]
                 }
-            ]
+            ],
+            "inferenceConfig": {
+                "max_new_tokens": 2000
+            }
         })
         
         response = self.bedrock.invoke_model(
@@ -106,7 +109,7 @@ class SpeechProcessor:
         )
         
         response_body = json.loads(response.get('body').read())
-        response_text = response_body['content'][0]['text']
+        response_text = response_body['output']['message']['content'][0]['text']
         
         # Clean up response - remove AI meta-text
         lines_to_remove = [
