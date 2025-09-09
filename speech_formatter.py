@@ -121,33 +121,47 @@ with left_col:
         audio = None
     
     if audio:
-        st.audio(audio['bytes'])
-        
-        # Show clear button after processing is complete
-        if st.session_state.transcription_job is None and st.session_state.formatted_text:
-            if st.button("🗑️ Clear Recording"):
-                st.session_state.formatted_text = ""
-                st.session_state.recorder_key += 1  # Reset recorder component
-                st.rerun()
-        
-        # Buttons side by side (only when no job running and no completed output)
-        elif not st.session_state.transcription_job:
-            col_transcribe, col_clear = st.columns(2)
+        try:
+            # Handle different audio data structures
+            if isinstance(audio, dict) and 'bytes' in audio:
+                audio_bytes = audio['bytes']
+            elif hasattr(audio, 'bytes'):
+                audio_bytes = audio.bytes
+            else:
+                audio_bytes = audio
+                
+            st.audio(audio_bytes)
             
-            with col_transcribe:
-                if st.button("🔄 Transcribe & Format", type="primary"):
-                    try:
-                        job_name = f"speech-job-{uuid.uuid4().hex[:8]}"
-                        st.session_state.transcription_job = st.session_state.processor.transcribe_audio(
-                            audio['bytes'], job_name
-                        )
-                        # Success message will show after page refreshes and cancel button appears
-                    except Exception as e:
-                        st.error(f"Error starting transcription: {str(e)}")
-            
-            with col_clear:
+            # Show clear button after processing is complete
+            if st.session_state.transcription_job is None and st.session_state.formatted_text:
                 if st.button("🗑️ Clear Recording"):
-                    st.session_state.transcription_job = None
+                    st.session_state.formatted_text = ""
+                    st.session_state.recorder_key += 1  # Reset recorder component
+                    st.rerun()
+            
+            # Buttons side by side (only when no job running and no completed output)
+            elif not st.session_state.transcription_job:
+                col_transcribe, col_clear = st.columns(2)
+                
+                with col_transcribe:
+                    if st.button("🔄 Transcribe & Format", type="primary"):
+                        try:
+                            job_name = f"speech-job-{uuid.uuid4().hex[:8]}"
+                            st.session_state.transcription_job = st.session_state.processor.transcribe_audio(
+                                audio_bytes, job_name
+                            )
+                            # Success message will show after page refreshes and cancel button appears
+                        except Exception as e:
+                            st.error(f"Error starting transcription: {str(e)}")
+                
+                with col_clear:
+                    if st.button("🗑️ Clear Recording"):
+                        st.session_state.transcription_job = None
+        except Exception as e:
+            st.error(f"Error processing audio data: {str(e)}")
+            st.write("Audio data structure:", type(audio))
+            if isinstance(audio, dict):
+                st.write("Available keys:", list(audio.keys()))
                     st.session_state.formatted_text = ""
                     st.session_state.recorder_key += 1  # Reset recorder component
                     st.rerun()
