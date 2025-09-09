@@ -110,11 +110,17 @@ with left_col:
     # Speech input section
     st.subheader("Speech Input - Record Audio")
     
-    audio = mic_recorder(
-        start_prompt="🎤 Start Recording",
-        stop_prompt="⏹️ Stop Recording",
-        key=f'recorder_{st.session_state.recorder_key}'
-    )
+    try:
+        audio = mic_recorder(
+            start_prompt="🎤 Start Recording",
+            stop_prompt="⏹️ Stop Recording",
+            key=f'recorder_{st.session_state.recorder_key}',
+            sample_rate=16000,  # Explicitly set sample rate
+            format="webm"
+        )
+    except Exception as e:
+        st.error(f"Microphone error: {e}")
+        audio = None
     
     if audio:
         st.audio(audio['bytes'])
