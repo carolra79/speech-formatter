@@ -16,3 +16,12 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - echo Image pushed successfully!
+      - |
+        if [ "$DEPLOYMENT_TYPE" = "ECS" ]; then
+          echo Updating ECS service...
+          aws ecs update-service --cluster ${ECS_CLUSTER_NAME:-speech-formatter-cluster} --service ${ECS_SERVICE_NAME:-speech-formatter-service} --force-new-deployment --region $AWS_DEFAULT_REGION
+          echo ECS service update triggered!
+        else
+          echo Skipping ECS update for EC2 deployment
+        fi
