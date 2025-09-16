@@ -233,11 +233,76 @@ with right_col:
 </body>
 </html>"""
         
-        st.download_button(
-            label="📄 Download Document",
-            data=html_content,
-            file_name=f"email_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
-            mime="text/html"
-        )
+        # Show different buttons based on document type
+        if doc_type == "Email":
+            # Parse subject and body for mailto
+            import re
+            from urllib.parse import quote
+            
+            text = st.session_state.formatted_text
+            subject = ""
+            
+            # Extract subject - look for "Subject:" anywhere in first few lines
+            lines = text.split('\n')
+            for i, line in enumerate(lines[:3]):  # Check first 3 lines
+                if 'subject:' in line.lower():
+                    subject = line.split(':', 1)[1].strip()
+                    # Clean up subject - remove markdown formatting
+                    subject = subject.replace('**', '').replace('*', '')
+                    # Remove this line and join the rest as body
+                    body_lines = lines[:i] + lines[i+1:]
+                    body_text = '\n'.join(body_lines).strip()
+                    break
+            else:
+                # No subject found, use whole text as body
+                body_text = text
+            
+            # Convert markdown links to plain text with URLs
+            body_text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'\1: \2', body_text)
+            
+            # Create mailto URL with subject and body
+            mailto_url = f"mailto:?subject={quote(subject)}&body={quote(body_text)}"
+            
+            # Check URL length and provide fallback for long emails
+            if len(mailto_url) > 2000:
+                # For long emails: use \r\r for paragraph breaks
+                clipboard_text = re.sub(r'\n\n+', '\r\r', body_text)  # Convert line breaks to carriage returns
+                placeholder_mailto = f"mailto:?subject={quote(subject)}&body={quote('Email copied to clipboard, paste it here')}"
+                
+                # Use streamlit components for better HTML rendering
+                import streamlit.components.v1 as components
+                import json
+                copy_text_js = json.dumps(clipboard_text)
+                
+                button_js = f"""
+                <html>
+                <body>
+                <button onclick="openEmailAndCopy()" style="background-color:#ff4b4b;color:white;border:none;padding:0.5rem 1rem;border-radius:0.25rem;cursor:pointer;">
+                    📧 Open Outlook
+                </button>
+                
+                <script>
+                function openEmailAndCopy() {{
+                    window.open('{placeholder_mailto}', '_blank');
+                    navigator.clipboard.writeText({copy_text_js}).catch(() => {{
+                        alert('Email opened, but clipboard copy failed.');
+                    }});
+                }}
+                </script>
+                </body>
+                </html>
+                """
+                components.html(button_js, height=50)
+            else:
+                st.markdown(f'<a href="{mailto_url}" target="_blank"><button style="background-color:#ff4b4b;color:white;border:none;padding:0.5rem 1rem;border-radius:0.25rem;cursor:pointer;">📧 Open in Outlook</button></a>', 
+                            unsafe_allow_html=True)
+        else:
+            # Download button for other document types
+            st.download_button(
+                label="📄 Download Document",
+                data=html_content,
+                file_name=f"{doc_type.lower().replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
+                mime="text/html"
+            )
     else:
         st.info("Formatted document will appear here")
