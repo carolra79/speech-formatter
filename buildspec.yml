@@ -1,6 +1,12 @@
 version: 0.2
 
 phases:
+  install:
+    runtime-versions:
+      docker: 20
+    commands:
+      - apt-get update -y
+      - apt-get install -y jq
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
@@ -20,12 +26,36 @@ phases:
       - |
         if [ "$DEPLOYMENT_TYPE" = "ECS" ]; then
           echo Updating ECS service...
-          # Get the latest task definition revision
-          TASK_DEF_ARN=$(aws ecs describe-task-definition --task-definition speech-formatter-task --region $AWS_DEFAULT_REGION --query 'taskDefinition.taskDefinitionArn' --output text)
-          echo "Using task definition: $TASK_DEF_ARN"
-          # Update service with latest task definition
-          aws ecs update-service --cluster ${ECS_CLUSTER_NAME:-speech-formatter-cluster} --service ${ECS_SERVICE_NAME:-speech-formatter-service} --task-definition $TASK_DEF_ARN --force-new-deployment --region $AWS_DEFAULT_REGION
-          echo ECS service update triggered with latest task definition!
+          
+          # Get current task definition
+          TASK_DEF=$(aws ecs describe-task-definition --task-definition speech-formatter-task --region $AWS_DEFAULT_REGION)
+          
+          # Extract required fields
+          EXECUTION_ROLE=$(echo $TASK_DEF | jq -r '.taskDefinition.executionRoleArn')
+          CPU=$(echo $TASK_DEF | jq -r '.taskDefinition.cpu')
+          MEMORY=$(echo $TASK_DEF | jq -r '.taskDefinition.memory')
+          
+          # Create new task definition with new image
+          NEW_IMAGE="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"
+          
+          aws ecs register-task-definition \
+            --family speech-formatter-task \
+            --network-mode awsvpc \
+            --requires-compatibilities FARGATE \
+            --cpu $CPU \
+            --memory $MEMORY \
+            --execution-role-arn "$EXECUTION_ROLE" \
+            --container-definitions "[{\"name\":\"speech-formatter-container\",\"image\":\"$NEW_IMAGE\",\"portMappings\":[{\"containerPort\":8501,\"protocol\":\"tcp\"}],\"essential\":true,\"logConfiguration\":{\"logDriver\":\"awslogs\",\"options\":{\"awslogs-group\":\"/ecs/speech-formatter-task\",\"awslogs-region\":\"$AWS_DEFAULT_REGION\",\"awslogs-stream-prefix\":\"ecs\"}}}]" \
+            --region $AWS_DEFAULT_REGION
+          
+          # Update service to use new task definition
+          aws ecs update-service \
+            --cluster ${ECS_CLUSTER_NAME:-speech-formatter-cluster} \
+            --service ${ECS_SERVICE_NAME:-speech-formatter-service} \
+            --task-definition speech-formatter-task \
+            --region $AWS_DEFAULT_REGION
+          
+          echo ECS service updated with new task definition!
         else
           echo Skipping ECS update for EC2 deployment
         fi
