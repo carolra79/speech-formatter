@@ -1,0 +1,21 @@
+[
+  {
+    "name": "speech-formatter-container",
+    "image": "185749752590.dkr.ecr.us-east-1.amazonaws.com/speech-formatter@sha256:995f225ea7faa2744edbd3a672dc8a08989c7bad16065e9ad88b81344edb89cf",
+    "portMappings": [
+      {
+        "containerPort": 8501,
+        "protocol": "tcp"
+      }
+    ],
+    "essential": true,
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/speech-formatter-task",
+        "awslogs-region": "us-east-1",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]
