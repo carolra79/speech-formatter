@@ -14,7 +14,7 @@ phases:
       - TASK_FAMILY="speech-formatter-task"
       - CLUSTER_NAME=$ECS_CLUSTER_NAME
       - SERVICE_NAME=$ECS_SERVICE_NAME
-      - echo "Working with cluster: $CLUSTER_NAME and service: $SERVICE_NAME"
+      - echo "Working with cluster $CLUSTER_NAME and service $SERVICE_NAME"
   build:
     commands:
       - echo Build started on `date`
@@ -30,47 +30,14 @@ phases:
       - |
         if [ "$DEPLOYMENT_TYPE" = "ECS" ]; then
           echo "Updating ECS service..."
-          
-          # Get current task definition
           aws ecs describe-task-definition --task-definition $TASK_FAMILY --query taskDefinition > task-definition.json
-          
-          # Update container image in task definition (preserving all other settings)
           NEW_IMAGE="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"
           jq --arg IMAGE "$NEW_IMAGE" '.containerDefinitions[0].image = $IMAGE' task-definition.json > new-task-definition.json
-          
-          # Register new task definition (preserving all original settings)
-          NEW_TASK_DEF=$(aws ecs register-task-definition \
-            --family $TASK_FAMILY \
-            --execution-role-arn "$(jq -r '.executionRoleArn // empty' task-definition.json)" \
-            --task-role-arn "$(jq -r '.taskRoleArn // empty' task-definition.json)" \
-            --network-mode "$(jq -r '.networkMode' task-definition.json)" \
-            --cpu "$(jq -r '.cpu // empty' task-definition.json)" \
-            --memory "$(jq -r '.memory // empty' task-definition.json)" \
-            --requires-compatibilities "$(jq -c '.requiresCompatibilities' task-definition.json)" \
-            --container-definitions "$(jq -c '.containerDefinitions' new-task-definition.json)" \
-            --volumes "$(jq -c '.volumes // []' task-definition.json)" \
-            --placement-constraints "$(jq -c '.placementConstraints // []' task-definition.json)" \
-            --region $AWS_DEFAULT_REGION \
-            --query 'taskDefinition.taskDefinitionArn' --output text)
-          
+          NEW_TASK_DEF=$(aws ecs register-task-definition --family $TASK_FAMILY --execution-role-arn "$(jq -r '.executionRoleArn // empty' task-definition.json)" --task-role-arn "$(jq -r '.taskRoleArn // empty' task-definition.json)" --network-mode "$(jq -r '.networkMode' task-definition.json)" --cpu "$(jq -r '.cpu // empty' task-definition.json)" --memory "$(jq -r '.memory // empty' task-definition.json)" --requires-compatibilities "$(jq -c '.requiresCompatibilities' task-definition.json)" --container-definitions "$(jq -c '.containerDefinitions' new-task-definition.json)" --volumes "$(jq -c '.volumes // []' task-definition.json)" --placement-constraints "$(jq -c '.placementConstraints // []' task-definition.json)" --region $AWS_DEFAULT_REGION --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "New task definition created: $NEW_TASK_DEF"
-          
-          # Update service to use new task definition
-          aws ecs update-service \
-            --cluster $CLUSTER_NAME \
-            --service $SERVICE_NAME \
-            --task-definition $NEW_TASK_DEF \
-            --region $AWS_DEFAULT_REGION
-          
+          aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $NEW_TASK_DEF --region $AWS_DEFAULT_REGION
           echo "ECS service $SERVICE_NAME updated with new task definition!"
-          
-          # Wait for service to stabilize (optional)
-          echo "Waiting for service to stabilize..."
-          aws ecs wait services-stable \
-            --cluster $CLUSTER_NAME \
-            --services $SERVICE_NAME \
-            --region $AWS_DEFAULT_REGION
-          
+          aws ecs wait services-stable --cluster $CLUSTER_NAME --services $SERVICE_NAME --region $AWS_DEFAULT_REGION
           echo "Service deployment complete and stable!"
         else
           echo "Skipping ECS update for EC2 deployment"
