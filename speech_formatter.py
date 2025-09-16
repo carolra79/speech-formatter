@@ -265,7 +265,8 @@ with right_col:
             
             # Check URL length and provide fallback for long emails
             if len(mailto_url) > 2000:
-                # For long emails: use simple HTML button without components
+                # For long emails: use \r\r for paragraph breaks
+                clipboard_text = re.sub(r'\n\n+', '\r\r', body_text)  # Convert line breaks to carriage returns
                 placeholder_mailto = f"mailto:?subject={quote(subject)}&body={quote('Email copied to clipboard, paste it here')}"
                 
                 st.markdown(f'<a href="{placeholder_mailto}" target="_blank"><button style="background-color:#ff4b4b;color:white;border:none;padding:0.5rem 1rem;border-radius:0.25rem;cursor:pointer;">📧 Open Outlook</button></a>', 
