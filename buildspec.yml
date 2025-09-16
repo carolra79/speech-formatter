@@ -20,8 +20,12 @@ phases:
       - |
         if [ "$DEPLOYMENT_TYPE" = "ECS" ]; then
           echo Updating ECS service...
-          aws ecs update-service --cluster ${ECS_CLUSTER_NAME:-speech-formatter-cluster} --service ${ECS_SERVICE_NAME:-speech-formatter-service} --force-new-deployment --region $AWS_DEFAULT_REGION
-          echo ECS service update triggered!
+          # Get the latest task definition revision
+          TASK_DEF_ARN=$(aws ecs describe-task-definition --task-definition speech-formatter-task --region $AWS_DEFAULT_REGION --query 'taskDefinition.taskDefinitionArn' --output text)
+          echo "Using task definition: $TASK_DEF_ARN"
+          # Update service with latest task definition
+          aws ecs update-service --cluster ${ECS_CLUSTER_NAME:-speech-formatter-cluster} --service ${ECS_SERVICE_NAME:-speech-formatter-service} --task-definition $TASK_DEF_ARN --force-new-deployment --region $AWS_DEFAULT_REGION
+          echo ECS service update triggered with latest task definition!
         else
           echo Skipping ECS update for EC2 deployment
         fi
