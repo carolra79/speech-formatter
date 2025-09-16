@@ -10,7 +10,7 @@ from streamlit_mic_recorder import mic_recorder
 
 # Configure Streamlit for load balancer path
 st.set_page_config(
-    page_title="Speech-to-Document Formatter",
+    page_title="Speech-to-Document Formatter v2.0",
     page_icon="🎤",
     layout="wide",
     initial_sidebar_state="expanded"
