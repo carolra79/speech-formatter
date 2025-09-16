@@ -8,7 +8,7 @@ from config import AWS_REGION
 from prompt_manager import load_email_settings, save_email_settings, EXAMPLE_EMAIL_PROMPT, save_template_file
 from streamlit_mic_recorder import mic_recorder
 
-# Page config
+# Configure Streamlit for load balancer path
 st.set_page_config(
     page_title="Speech-to-Document Formatter",
     page_icon="🎤",
