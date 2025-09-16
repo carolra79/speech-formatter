@@ -265,34 +265,12 @@ with right_col:
             
             # Check URL length and provide fallback for long emails
             if len(mailto_url) > 2000:
-                # For long emails: use \r\r for paragraph breaks
-                clipboard_text = re.sub(r'\n\n+', '\r\r', body_text)  # Convert line breaks to carriage returns
+                # For long emails: use simple HTML button without components
                 placeholder_mailto = f"mailto:?subject={quote(subject)}&body={quote('Email copied to clipboard, paste it here')}"
                 
-                # Use streamlit components for better HTML rendering
-                import streamlit.components.v1 as components
-                import json
-                copy_text_js = json.dumps(clipboard_text)
-                
-                button_js = f"""
-                <html>
-                <body>
-                <button onclick="openEmailAndCopy()" style="background-color:#ff4b4b;color:white;border:none;padding:0.5rem 1rem;border-radius:0.25rem;cursor:pointer;">
-                    📧 Open Outlook
-                </button>
-                
-                <script>
-                function openEmailAndCopy() {{
-                    window.open('{placeholder_mailto}', '_blank');
-                    navigator.clipboard.writeText({copy_text_js}).catch(() => {{
-                        alert('Email opened, but clipboard copy failed.');
-                    }});
-                }}
-                </script>
-                </body>
-                </html>
-                """
-                components.html(button_js, height=50)
+                st.markdown(f'<a href="{placeholder_mailto}" target="_blank"><button style="background-color:#ff4b4b;color:white;border:none;padding:0.5rem 1rem;border-radius:0.25rem;cursor:pointer;">📧 Open Outlook</button></a>', 
+                            unsafe_allow_html=True)
+                st.text_area("Email text (copy manually):", value=clipboard_text, height=100, key="copy_text")
             else:
                 st.markdown(f'<a href="{mailto_url}" target="_blank"><button style="background-color:#ff4b4b;color:white;border:none;padding:0.5rem 1rem;border-radius:0.25rem;cursor:pointer;">📧 Open in Outlook</button></a>', 
                             unsafe_allow_html=True)
