@@ -40,7 +40,7 @@ with st.sidebar:
         "Custom Email Prompt:",
         value=st.session_state.email_settings["custom_prompt"],
         height=200,
-        help=f"Example prompt:\n\n{EXAMPLE_EMAIL_PROMPT}"
+        help=EXAMPLE_EMAIL_PROMPT
     )
     
     if st.button("💾 Save Email Settings"):

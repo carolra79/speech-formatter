@@ -6,17 +6,19 @@ SETTINGS_FILE = "email_settings.json"
 
 DEFAULT_EMAIL_PROMPT = "Customise your email response with the tone, your personal greeting and sign off and any other information the model will use to get your emails right."
 
-EXAMPLE_EMAIL_PROMPT = """The basic prompt in the code is: 
+EXAMPLE_EMAIL_PROMPT = """The basic prompt in the code is:
+
 Format this text as a professional email. Use proper structure with:
-- Clear subject line
-- Appropriate greeting
-- Well-organized body paragraphs
-- Professional closing
-- Use as much of the input text as possible but do not add additional data or invent information.
+• Clear subject line
+• Appropriate greeting
+• Well-organized body paragraphs
+• Professional closing
+• Use as much of the input text as possible but do not add additional data or invent information.
+
 Use the custom email prompt to add personalised details such as:
-- Sign off: Include a sign-off that says: "Thanks <your name>"
-- Never use emojis
-- Keep the tone informal but professional"""
+• Sign off: Include a sign-off that says: "Thanks <your name>"
+• Never use emojis
+• Keep the tone informal but professional"""
 
 def load_email_settings():
     """Load email settings from file"""
