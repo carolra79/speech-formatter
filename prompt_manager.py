@@ -6,32 +6,19 @@ SETTINGS_FILE = "email_settings.json"
 
 DEFAULT_EMAIL_PROMPT = "Customise your email response with the tone, your personal greeting and sign off and any other information the model will use to get your emails right."
 
-EXAMPLE_EMAIL_PROMPT = """Reformat the input into a format suitable for work email.
+EXAMPLE_EMAIL_PROMPT = """The basic prompt in the code is: 
 
-Use as much of the input detail as possible.
+Format this text as a professional email. Use proper structure with:
+- Clear subject line
+- Appropriate greeting
+- Well-organized body paragraphs
+- Professional closing
+- Use as much of the input text as possible but do not add additional data or invent information.
 
-Structure it in the following way:
-
-Greeting: If the name of the recipient isn't known use "Hi there," for greeting. If it is known, say "Hi <FIRSTNAME>"
-
-Body: Use the input as the body of the email. Break it into paragraphs of one to two sentences each.
-
-Sign off: Include a sign-off that says: "Thanks
-<my name>"
-
-Never sign off with "Best" or "Kind regards" - this too formal.
-
-Only add extra text where it's essential to create an easy to read, friendly email.
-
-When I mention booking a call, include this link - <personal calender link>
-
-Check for correct grammar and punctuation UK spellings.
-
-Don't use unnecessary phrases like "I wanted to let you know" or "I'm just getting in touch to say".
-
-Don't say "I hope this email finds you well"
-
-IMPORTANT: Never use slang or informal contractions like "wanna", "gonna", "coulda", "shoulda". Proper contractions like "can't, won't, isn't" are fine."""
+Use the custom email prompt to add personalised details such as:
+- Sign off: Include a sign-off that says: "Thanks <your name>"
+- Never use emojis
+- Keep the tone informal but professional"""
 
 def load_email_settings():
     """Load email settings from file"""
