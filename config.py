@@ -25,11 +25,13 @@ EMAIL_TONES = {
 
 DOCUMENT_PROMPTS = {
     "Email": """
-    Format this text as a {tone} email. Use proper structure with:
+    Format this text as a professional email. Use proper structure with:
     - Clear subject line
     - Appropriate greeting
     - Well-organized body paragraphs
     - Professional closing
+    
+    Use as much of the input text as possible but do not add additional data or invent information.
     
     Text to format: {text}
     """,
